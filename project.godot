@@ -14,3 +14,13 @@ config/name="SteamLobbyModule"
 config/tags=PackedStringArray("module")
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SteamLobby="*res://module/steam_lobby.gd"
+
+[steam]
+
+initialization/app_id=0
+initialization/initialize_on_startup=false
+initialization/embed_callbacks=false
