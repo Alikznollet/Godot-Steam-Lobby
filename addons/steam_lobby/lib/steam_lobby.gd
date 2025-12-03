@@ -48,6 +48,7 @@ func _ready() -> void:
 	Steam.lobby_joined.connect(_on_lobby_joined)
 	Steam.join_requested.connect(_on_lobby_join_requested)
 	Steam.persona_state_change.connect(_on_persona_change)
+	Steam.lobby_chat_update.connect(_on_lobby_chat_update)
 
 	_load_lobby_id_from_cache()
 
@@ -116,13 +117,13 @@ func leave_lobby() -> void:
 		lobby_id = 0
 		lobby_members.clear()
 
-# -- Persona Updates -- #
+# -- Updates -- #
 
 ## If some player changes it's persona we update that player.
 ## Flag is ignored here because we don't need to know what was updated.
 func _on_persona_change(steam_id: int, _flag: int) -> void:
 	if lobby_id > 0:
-		_update_steam_user(steam_id)
+		_get_steam_users() # TODO: Find a way to make this on a user basis and also when joining or leaving.
 
 ## Updates SteamUser instance linked to steam_id.
 func _update_steam_user(steam_id: int) -> void:
@@ -137,6 +138,29 @@ func _update_steam_user(steam_id: int) -> void:
 	user.name = Steam.getFriendPersonaName(steam_id)
 
 	lobby_changed.emit()
+
+## Will remove the user with steam_id from the members list.
+## This normally means they have left the lobby.
+func _remove_steam_user(steam_id: int) -> void:
+	if not lobby_members.has(steam_id): return # Doesn't have id so exit gracefully
+
+	lobby_members.erase(steam_id)
+	lobby_changed.emit()
+
+## Updates the lobby according to the chat_state.
+func _on_lobby_chat_update(this_lobby_id: int, changer_id: int, making_change_id, chat_state: int) -> void:
+	# TODO: Handle other important ChatUpdates.
+	match chat_state:
+		Steam.CHAT_MEMBER_STATE_CHANGE_LEFT:
+			_remove_steam_user(changer_id)
+		Steam.CHAT_MEMBER_STATE_CHANGE_ENTERED:
+			_update_steam_user(changer_id)
+
+## Will fill the lobby_members dictionary with all currently connected users.
+func _get_steam_users() -> void:
+	for i in range(Steam.getNumLobbyMembers(lobby_id)):
+		var id: int = Steam.getLobbyMemberByIndex(lobby_id, i)
+		_update_steam_user(id)
 
 # -- LobbyData -- #
 
