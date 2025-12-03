@@ -10,3 +10,58 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fdt2r")
+
+[node name="LobbyIDLeave" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.009
+anchor_top = 0.009
+anchor_right = 0.027
+anchor_bottom = 0.018
+offset_right = 212.896
+offset_bottom = 40.0
+
+[node name="LobbyID" type="LineEdit" parent="LobbyIDLeave"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(182.69, 0)
+layout_mode = 2
+placeholder_text = "Lobby ID"
+
+[node name="LeaveLobby" type="Button" parent="LobbyIDLeave"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Leave"
+
+[node name="JoinCreate" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.01
+anchor_top = 0.073
+anchor_right = 0.16900001
+anchor_bottom = 0.17500001
+offset_top = 12.695999
+offset_right = -0.32000732
+offset_bottom = 14.599991
+
+[node name="JoinLobby" type="Button" parent="JoinCreate"]
+layout_mode = 2
+text = "Join Lobby"
+
+[node name="CreateLobby" type="Button" parent="JoinCreate"]
+layout_mode = 2
+text = "Create Lobby"
+
+[node name="MembersList" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[connection signal="pressed" from="LobbyIDLeave/LeaveLobby" to="." method="_on_leave_lobby_pressed"]
+[connection signal="pressed" from="JoinCreate/JoinLobby" to="." method="_on_join_lobby_pressed"]
+[connection signal="pressed" from="JoinCreate/CreateLobby" to="." method="_on_create_lobby_pressed"]

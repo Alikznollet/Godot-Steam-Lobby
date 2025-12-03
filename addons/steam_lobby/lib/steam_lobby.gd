@@ -8,11 +8,10 @@ extends Node
 # -- Constants -- #
 
 ## Path to the lobby cache file. Used to rejoin lobbies that were incorrectly left.
-const _lobby_cache_path: String = "user://lobby_cache/lobby.txt"
+const _lobby_cache_path: String = "user://lobby_cache.txt"
 
-## Signal the menu can be hooked up to so it can listen for updated.
-signal lobby_confirmed()
-signal lobby_left()
+## Signal emitted when the lobby is changed in any shape or form.
+signal lobby_changed()
 
 # -- Variables -- #
 
@@ -23,14 +22,16 @@ var max_members: int = 10
 ## The ID of the lobby entered. If 0 the client is not in a Steam lobby.
 var lobby_id: int = 0:
 	set(new_lobby_id):
+		if lobby_id == new_lobby_id: return # If the new lobby ID is the same, nothing has changed.
 		lobby_id = new_lobby_id
+		lobby_changed.emit()
 
 		# If lobby is left intentionally we will delete the file.
 		if lobby_id == 0:
 			DirAccess.remove_absolute(_lobby_cache_path)
 		else:
 			var file: FileAccess = FileAccess.open(_lobby_cache_path, FileAccess.WRITE)
-			assert(file, "SteamLobby: Could not open lobby cache.")
+			assert(file, "SteamLobby: Could not open lobby cache for write.")
 
 			file.store_64(lobby_id)
 			file.close()
@@ -40,6 +41,9 @@ var lobby_id: int = 0:
 var lobby_members: Dictionary[int, SteamUser] = {}
 
 func _ready() -> void:
+	# Will initialize the app_id filled in inside of the editor.
+	Steam.steamInitEx(ProjectSettings.get_setting("steam/initialization/app_id"), true)
+
 	Steam.lobby_created.connect(_on_lobby_created)
 	Steam.lobby_joined.connect(_on_lobby_joined)
 	Steam.join_requested.connect(_on_lobby_join_requested)
@@ -55,7 +59,7 @@ func _load_lobby_id_from_cache() -> void:
 	if not FileAccess.file_exists(_lobby_cache_path): return
 
 	var file: FileAccess = FileAccess.open(_lobby_cache_path, FileAccess.READ)
-	assert(file, "SteamLobby: Could not open lobby cache.")
+	assert(file, "SteamLobby: Could not open lobby cache for read.")
 
 	var v_lobby_id: int = file.get_64()
 	file.close()
@@ -92,7 +96,6 @@ func _on_lobby_joined(this_lobby_id: int, _permissions: int, _locked: bool, resp
 	if response == Steam.CHAT_ROOM_ENTER_RESPONSE_SUCCESS:
 		# Set this lobby ID as your lobby ID
 		lobby_id = this_lobby_id
-		lobby_confirmed.emit()
 
 	# If the response was not success
 	else:
@@ -112,7 +115,6 @@ func leave_lobby() -> void:
 		Steam.leaveLobby(lobby_id)
 		lobby_id = 0
 		lobby_members.clear()
-		lobby_left.emit()
 
 # -- Persona Updates -- #
 
@@ -133,6 +135,8 @@ func _update_steam_user(steam_id: int) -> void:
 	
 	# TODO: Add more metadata here.
 	user.name = Steam.getFriendPersonaName(steam_id)
+
+	lobby_changed.emit()
 
 # -- LobbyData -- #
 
