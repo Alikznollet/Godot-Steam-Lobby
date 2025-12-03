@@ -1,3 +1,4 @@
+@tool
 extends Resource
 class_name SteamUser
 ## Represents a Steam user.

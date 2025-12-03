@@ -10,17 +10,22 @@ config_version=5
 
 [application]
 
-config/name="SteamLobbyModule"
-config/tags=PackedStringArray("module")
+config/name="SteamLobby"
+config/tags=PackedStringArray("plugin")
+run/main_scene="uid://b6646y088dd61"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-SteamLobby="*res://module/steam_lobby.gd"
+SteamLobby="*res://addons/steam_lobby/lib/steam_lobby.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/steam_lobby/plugin.cfg")
 
 [steam]
 
-initialization/app_id=0
-initialization/initialize_on_startup=false
-initialization/embed_callbacks=false
+initialization/app_id=480
+initialization/initialize_on_startup=true
+initialization/embed_callbacks=true

@@ -1,3 +1,4 @@
+@tool
 extends Node
 ## SteamLobby
 ## 
@@ -6,6 +7,7 @@ extends Node
 
 # -- Constants -- #
 
+## Path to the lobby cache file. Used to rejoin lobbies that were incorrectly left.
 const _lobby_cache_path: String = "user://lobby_cache/lobby.txt"
 
 ## Signal the menu can be hooked up to so it can listen for updated.
@@ -62,7 +64,8 @@ func _load_lobby_id_from_cache() -> void:
 
 # -- Lobby Creation -- #
 
-## Will create a lobby.
+## Will create a lobby based on the lobby type provided.
+## Types are contained in Steam.LobbyType
 func create_lobby(lobby_type: Steam.LobbyType) -> void:
 	if lobby_id == 0:
 		Steam.createLobby(lobby_type, max_members)
@@ -72,23 +75,16 @@ func _on_lobby_created(connected: int, this_lobby_id: int) -> void:
 	if connected == 1:
 		# Set the lobby ID
 		lobby_id = this_lobby_id
-
-		# Set some lobby data.
-		Steam.setLobbyJoinable(lobby_id, true)
-
-		# Allow P2P connections to fallback to being relayed through Steam if needed
-		Steam.allowP2PPacketRelay(true)
-		lobby_confirmed.emit()
 	
 # -- Lobby Joining -- #
 
-## Will join a lobby.
-func join_lobby(this_lobby_id: int) -> void:
+## Will try to join the lobby with provided ID.
+func join_lobby(lobby_id: int) -> void:
 	# Clear any previous lobby members lists, if you were in a previous lobby
 	lobby_members.clear()
 
 	# Make the lobby join request to Steam
-	Steam.joinLobby(this_lobby_id)
+	Steam.joinLobby(lobby_id)
 
 ## Ran when Steam sees that the user has joined a lobby.
 func _on_lobby_joined(this_lobby_id: int, _permissions: int, _locked: bool, response: int) -> void:
@@ -96,14 +92,12 @@ func _on_lobby_joined(this_lobby_id: int, _permissions: int, _locked: bool, resp
 	if response == Steam.CHAT_ROOM_ENTER_RESPONSE_SUCCESS:
 		# Set this lobby ID as your lobby ID
 		lobby_id = this_lobby_id
-
-		# Get the lobby members
 		lobby_confirmed.emit()
 
-	# Else it failed for some reason
+	# If the response was not success
 	else:
-		push_warning("Something went wrong while trying to join the lobby with ID=%d" % this_lobby_id)
-		lobby_id = 0 # We do this so the file caching the lobby_id is deleted.
+		lobby_id = 0 # This removes the cached lobby file.
+		printerr("SteamLobby: Could not join lobby, response was %d." % response)
 
 ## When a join is requested through a friend we will run this.
 func _on_lobby_join_requested(this_lobby_id: int, _friend_id: int) -> void:
@@ -112,7 +106,7 @@ func _on_lobby_join_requested(this_lobby_id: int, _friend_id: int) -> void:
 
 # -- Lobby Leaving -- #
 
-## If in a lobby we leave the lobby and reset all fields.
+## Leave the current lobby if there is one and reset all fields.
 func leave_lobby() -> void:
 	if lobby_id != 0:
 		Steam.leaveLobby(lobby_id)
@@ -139,3 +133,7 @@ func _update_steam_user(steam_id: int) -> void:
 	
 	# TODO: Add more metadata here.
 	user.name = Steam.getFriendPersonaName(steam_id)
+
+# -- LobbyData -- #
+
+# TODO: Implement a robust lobby data system.
