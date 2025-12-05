@@ -27,3 +27,5 @@ enabled=PackedStringArray("res://addons/steam_lobby/plugin.cfg")
 [steam]
 
 initialization/app_id=480
+initialization/initialize_on_startup=false
+initialization/embed_callbacks=false

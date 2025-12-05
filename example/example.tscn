@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b6646y088dd61"]
+[gd_scene load_steps=3 format=3 uid="uid://b6646y088dd61"]
 
 [ext_resource type="Script" uid="uid://daevxdcysycq" path="res://example/example.gd" id="1_fdt2r"]
+[ext_resource type="Script" uid="uid://2fqvetndvvs0" path="res://addons/steam_lobby/lib/steam_lobby_list.gd" id="2_pjyox"]
 
 [node name="Example" type="Control"]
 layout_mode = 3
@@ -10,6 +11,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fdt2r")
+
+[node name="SteamLobbyList" type="Node" parent="."]
+script = ExtResource("2_pjyox")
+refresh_time = 5
+metadata/_custom_type_script = "uid://2fqvetndvvs0"
 
 [node name="LobbyIDLeave" type="HBoxContainer" parent="."]
 layout_mode = 1

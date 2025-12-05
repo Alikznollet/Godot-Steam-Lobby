@@ -8,12 +8,13 @@ func _enable_plugin() -> void:
 func _disable_plugin() -> void:
 	remove_autoload_singleton("SteamLobby")
 
-
 func _enter_tree() -> void:
-	# Initialization of the plugin goes here.
-	pass
-
+	add_custom_type(
+		"SteamLobbyList",
+		"Node",
+		preload("lib/steam_lobby_list.gd"),
+		null
+	)
 
 func _exit_tree() -> void:
-	# Clean-up of the plugin goes here.
-	pass
+	remove_custom_type("SteamLobbyList")
