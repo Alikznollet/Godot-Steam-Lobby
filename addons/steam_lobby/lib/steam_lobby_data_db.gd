@@ -1,4 +1,7 @@
 extends Node
+## Database for all SteamLobbyData types.
+##
+## Get an instance with init_from_stringname()
 
 ## Carries all types of user defined SteamLobbyData
 var TYPES_LOBBY_DATA: Dictionary[StringName, GDScript] = {}

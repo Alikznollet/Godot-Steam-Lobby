@@ -90,6 +90,7 @@ func _on_lobby_created(connected: int, this_lobby_id: int) -> void:
 		# Set lobby data and tell the lobby what type of LobbyData is used.
 		lobby_data = _tmp_lobby_data
 		Steam.setLobbyData(lobby_id, "ld_type", lobby_data.get_script().get_global_name())
+		_on_lobby_data_local_update() # Make sure to trigger a local update after init.
 	
 # -- Lobby Joining -- #
 
@@ -194,7 +195,8 @@ var lobby_data: SteamLobbyData:
 ## Reacts to a local update from the lobby_data field.
 func _on_lobby_data_local_update() -> void:
 	# Check wether the user trying to perform a local change is the owner.
-	if Steam.getLobbyOwner(lobby_id) == Steam.getSteamID(): print("SteamLobby: You are not the lobby owner!")
+	# ? Is this necessary to be in the source, can be user checked too maybe?
+	if Steam.getLobbyOwner(lobby_id) != Steam.getSteamID(): print("SteamLobby: You are not the lobby owner!")
 
 	var data: Dictionary = lobby_data.get_data()
 	for key in data:
