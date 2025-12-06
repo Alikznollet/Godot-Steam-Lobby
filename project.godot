@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 SteamLobby="*res://addons/steam_lobby/lib/steam_lobby.gd"
+SteamLobbyDataDB="*res://addons/steam_lobby/lib/steam_lobby_data_db.gd"
 
 [editor_plugins]
 

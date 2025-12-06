@@ -38,7 +38,11 @@ func _clear_labels():
 	member_labels.clear()
 
 func _on_create_lobby_pressed() -> void:
-	SteamLobby.create_lobby(Steam.LobbyType.LOBBY_TYPE_PUBLIC)
+	var example_data := ExampleLobbyData.new()
+	example_data.lobby_name = "example"
+	example_data.game_type = ExampleLobbyData.GAME_TYPES.EXAMPLE
+
+	SteamLobby.create_lobby(Steam.LobbyType.LOBBY_TYPE_PUBLIC, example_data)
 
 func _on_join_lobby_pressed() -> void:
 	SteamLobby.join_lobby(int(%LobbyID.text))
