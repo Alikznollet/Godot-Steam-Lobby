@@ -55,13 +55,24 @@ text = "Create Lobby"
 [node name="MembersList" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 11
-anchor_left = 1.0
-anchor_right = 1.0
+anchors_preset = 9
 anchor_bottom = 1.0
-grow_horizontal = 0
 grow_vertical = 2
+alignment = 2
+
+[node name="LobbyName" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.899
+anchor_top = 0.007
+anchor_right = 0.996
+anchor_bottom = 0.007
+offset_left = -68.5625
+offset_bottom = 31.0
+grow_horizontal = 0
 
 [connection signal="pressed" from="LobbyIDLeave/LeaveLobby" to="." method="_on_leave_lobby_pressed"]
 [connection signal="pressed" from="JoinCreate/JoinLobby" to="." method="_on_join_lobby_pressed"]
 [connection signal="pressed" from="JoinCreate/CreateLobby" to="." method="_on_create_lobby_pressed"]
+[connection signal="text_submitted" from="LobbyName" to="." method="_on_lobby_name_text_submitted"]

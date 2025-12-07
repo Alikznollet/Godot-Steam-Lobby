@@ -205,7 +205,7 @@ func _on_lobby_data_local_update() -> void:
 
 ## Reacts to an external update from the lobby_data field.
 func _on_lobby_data_external_update() -> void:
-	pass
+	lobby_changed.emit()
 
 ## Triggered when the Steam's LobbyData is changed.
 ## Updates the current SteamLobbyData object in lobby_data.

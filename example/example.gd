@@ -21,6 +21,8 @@ func _new_lobby() -> void:
 		%LeaveLobby.show()
 		%LobbyID.editable = false
 		%LobbyID.text = str(SteamLobby.lobby_id)
+		if SteamLobby.lobby_data is ExampleLobbyData:
+			%LobbyName.text = str(SteamLobby.lobby_data.lobby_name)
 		
 		# Generate or update the label for each member
 		_clear_labels()
@@ -49,3 +51,7 @@ func _on_join_lobby_pressed() -> void:
 
 func _on_leave_lobby_pressed() -> void:
 	SteamLobby.leave_lobby()
+
+func _on_lobby_name_text_submitted(new_text: String) -> void:
+	if SteamLobby.lobby_data is ExampleLobbyData:
+		SteamLobby.lobby_data.lobby_name = new_text
