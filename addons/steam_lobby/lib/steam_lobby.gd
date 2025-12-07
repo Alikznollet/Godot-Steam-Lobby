@@ -1,4 +1,3 @@
-@tool
 extends Node
 ## SteamLobby
 ## 
@@ -197,7 +196,6 @@ func _on_lobby_data_local_update() -> void:
 	# Check wether the user trying to perform a local change is the owner.
 	# ? Is this necessary to be in the source, can be user checked too maybe?
 	if Steam.getLobbyOwner(lobby_id) != Steam.getSteamID(): print("SteamLobby: You are not the lobby owner!")
-	print(lobby_data)
 
 	var data: Dictionary = lobby_data.get_data()
 	for key in data:
