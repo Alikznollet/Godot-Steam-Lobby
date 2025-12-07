@@ -16,7 +16,7 @@ signal external_update()
 func update(data: Dictionary) -> void:
 	for property in data:
 		if property in self:
-			self[property] = str_to_var(data[property])
+			set(property, str_to_var(data[property]))
 	external_update.emit()
 
 ## Returns a dictionary of every user defined variable
@@ -38,10 +38,13 @@ func get_data() -> Dictionary:
 ## Emitted when lobby_data is changed locally.
 signal local_update()
 
-## Override 
-func _set(property: StringName, value: Variant) -> bool:
+## Locally updates a property from outside.
+## Using this function to change properties is mandatory if you want others to get the updates.
+## Will let the user know if an attempt to change a non-existing property is done.
+func change_property(property: StringName, value: Variant) -> bool:
 	if property in self:
-		self[property] = value
+		set(property, value)
 		local_update.emit()
 		return true
+	printerr("SteamLobbyData: Field %s does not exist in %s." % [property, get_script().get_global_name()])
 	return false

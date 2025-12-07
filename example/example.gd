@@ -10,6 +10,7 @@ func _new_lobby() -> void:
 	if SteamLobby.lobby_id == 0:
 		%JoinCreate.show()
 		%LeaveLobby.hide()
+		%LobbyName.hide()
 		%LobbyID.editable = true
 		%LobbyID.text = "0"
 
@@ -19,6 +20,7 @@ func _new_lobby() -> void:
 		# This is triggered when a new actual lobby is joined.
 		%JoinCreate.hide()
 		%LeaveLobby.show()
+		%LobbyName.show()
 		%LobbyID.editable = false
 		%LobbyID.text = str(SteamLobby.lobby_id)
 		if SteamLobby.lobby_data is ExampleLobbyData:
@@ -46,7 +48,7 @@ func _on_create_lobby_pressed() -> void:
 
 	SteamLobby.create_lobby(Steam.LobbyType.LOBBY_TYPE_PUBLIC, example_data)
 
-func _on_join_lobby_pressed() -> void:
+func _on_join_lobby_pressed() -> void: 
 	SteamLobby.join_lobby(int(%LobbyID.text))
 
 func _on_leave_lobby_pressed() -> void:
@@ -54,4 +56,4 @@ func _on_leave_lobby_pressed() -> void:
 
 func _on_lobby_name_text_submitted(new_text: String) -> void:
 	if SteamLobby.lobby_data is ExampleLobbyData:
-		SteamLobby.lobby_data.lobby_name = new_text
+		SteamLobby.lobby_data.change_property("lobby_name", new_text)
