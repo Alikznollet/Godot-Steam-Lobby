@@ -57,3 +57,6 @@ func _on_leave_lobby_pressed() -> void:
 func _on_lobby_name_text_submitted(new_text: String) -> void:
 	if SteamLobby.lobby_data is ExampleLobbyData:
 		SteamLobby.lobby_data.change_property("lobby_name", new_text)
+
+func _on_steam_lobby_list_lobbies_updated(lobbies: Array) -> void:
+	print(lobbies)

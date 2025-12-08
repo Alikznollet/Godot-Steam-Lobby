@@ -1,6 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://b6646y088dd61"]
+[gd_scene load_steps=5 format=3 uid="uid://b6646y088dd61"]
 
 [ext_resource type="Script" uid="uid://daevxdcysycq" path="res://example/example.gd" id="1_fdt2r"]
+[ext_resource type="Script" uid="uid://2fqvetndvvs0" path="res://addons/steam_lobby/lib/steam_lobby_list.gd" id="2_pjyox"]
+[ext_resource type="Script" uid="uid://egqjef3xltb5" path="res://example/example_lobby_filter.gd" id="3_8clr1"]
+
+[sub_resource type="Resource" id="Resource_7cn0y"]
+script = ExtResource("3_8clr1")
+f_lobby_name = "test"
+metadata/_custom_type_script = "uid://egqjef3xltb5"
 
 [node name="Example" type="Control"]
 layout_mode = 3
@@ -10,6 +17,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fdt2r")
+
+[node name="SteamLobbyList" type="Node" parent="."]
+script = ExtResource("2_pjyox")
+lobby_filter = SubResource("Resource_7cn0y")
+refresh_time = 5
+metadata/_custom_type_script = "uid://2fqvetndvvs0"
 
 [node name="LobbyIDLeave" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -72,6 +85,7 @@ offset_left = -68.5625
 offset_bottom = 31.0
 grow_horizontal = 0
 
+[connection signal="lobbies_updated" from="SteamLobbyList" to="." method="_on_steam_lobby_list_lobbies_updated"]
 [connection signal="pressed" from="LobbyIDLeave/LeaveLobby" to="." method="_on_leave_lobby_pressed"]
 [connection signal="pressed" from="JoinCreate/JoinLobby" to="." method="_on_join_lobby_pressed"]
 [connection signal="pressed" from="JoinCreate/CreateLobby" to="." method="_on_create_lobby_pressed"]
