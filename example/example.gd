@@ -1,19 +1,23 @@
 extends Control
+## An example scene demonstrating plugin functionality.
 
+# Dictionary holding SteamID to corresponding member label.
 var member_labels: Dictionary[int, Label] = {}
 
 func _ready() -> void:
 	SteamLobby.lobby_changed.connect(_new_lobby)
 	_new_lobby()
 
+# -- Visual changes -- #
+
+# Reacts to the lobby_changed signal appropriately.
 func _new_lobby() -> void:
 	if SteamLobby.lobby_id == 0:
 		%JoinCreate.show()
 		%Filters.show()
 		%SteamLobbyList.enabled = true
 		%LeaveLobby.hide()
-		%LobbyName.hide()
-		%GameType.hide()
+		%LobbyDetails.hide()
 		%LobbyID.editable = true
 		%LobbyID.text = "0"
 
@@ -25,13 +29,15 @@ func _new_lobby() -> void:
 		%Filters.hide()
 		%SteamLobbyList.enabled = false
 		%LeaveLobby.show()
-		%LobbyName.show()
-		%GameType.show()
+		%LobbyDetails.show()
 		%LobbyID.editable = false
 		%LobbyID.text = str(SteamLobby.lobby_id)
 		if SteamLobby.lobby_data is ExampleLobbyData:
 			%LobbyName.text = str(SteamLobby.lobby_data.lobby_name)
 			%GameType.selected = SteamLobby.lobby_data.game_type
+
+		%LobbyName.editable = SteamLobby.is_owner_me()
+		%GameType.disabled = !SteamLobby.is_owner_me()
 		
 		# Generate or update the label for each member
 		_clear_labels()
@@ -48,6 +54,8 @@ func _clear_labels():
 		label.queue_free()
 	member_labels.clear()
 
+# -- Joining, leaving and creating -- #
+
 func _on_create_lobby_pressed() -> void:
 	var example_data := ExampleLobbyData.new()
 	example_data.lobby_name = "example"
@@ -61,21 +69,27 @@ func _on_join_lobby_pressed() -> void:
 func _on_leave_lobby_pressed() -> void:
 	SteamLobby.leave_lobby()
 
+# -- Changing LobbyData -- #
+
 func _on_lobby_name_text_submitted(new_text: String) -> void:
 	if SteamLobby.lobby_data is ExampleLobbyData:
 		SteamLobby.lobby_data.change_property("lobby_name", new_text)
-
-func _on_steam_lobby_list_lobbies_updated(lobbies: Array) -> void:
-	print(lobbies)
 
 func _on_option_button_item_selected(index: int) -> void:
 	if SteamLobby.lobby_data is ExampleLobbyData:
 		SteamLobby.lobby_data.change_property("game_type", index)
 
+# -- Filtering and lobbies -- #
+
+## Prints all retrieved lobbies.
+func _on_steam_lobby_list_lobbies_updated(lobbies: Array) -> void:
+	print(lobbies)
+
 func _on_filter_game_type_item_selected(index: int) -> void:
-	if index == -1: %SteamLobbyList.lobby_filter.t_game_type = SteamLobbyFilter.FILTER_TYPE.OFF
-	else: %SteamLobbyList.lobby_filter.t_game_type = SteamLobbyFilter.FILTER_TYPE.NUMERICAL
-	%SteamLobbyList.lobby_filter.f_game_type = index
+	if index == 2: %SteamLobbyList.lobby_filter.t_game_type = SteamLobbyFilter.FILTER_TYPE.OFF
+	else: 
+		%SteamLobbyList.lobby_filter.t_game_type = SteamLobbyFilter.FILTER_TYPE.NUMERICAL
+		%SteamLobbyList.lobby_filter.f_game_type = index
 
 func _on_filter_lobby_name_text_submitted(new_text: String) -> void:
 	if new_text.is_empty(): %SteamLobbyList.lobby_filter.t_lobby_name = SteamLobbyFilter.FILTER_TYPE.OFF

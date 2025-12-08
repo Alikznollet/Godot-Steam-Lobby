@@ -1,6 +1,10 @@
 extends SteamLobbyFilter
 class_name ExampleLobbyFilter
 ## Example of a LobbyFilter.
+##
+## Pay attention to the naming scheme because it is important.
+## Each individual filter consist out of 3 variables.
+## Variable names have to align with what you're filtering.
 
 ## Lobby Name filter
 @export var f_lobby_name: String = "example"

@@ -46,7 +46,7 @@ func apply_filters() -> void:
 				var filter: Variant = get(property.name)
 				var filter_type: FILTER_TYPE = get("t_" + base)
 				var comparison: Steam.LobbyComparison = get("c_" + base)
-
+				
 				match filter_type:
 					FILTER_TYPE.STRING:
 						# Because of the way we are storing LobbyData we need to filter on the var_to_str. "\"example\"" with escapes.

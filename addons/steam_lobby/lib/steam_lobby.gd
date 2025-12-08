@@ -21,7 +21,6 @@ var max_members: int = 10
 ## The ID of the lobby entered. If 0 the client is not in a Steam lobby.
 var lobby_id: int = 0:
 	set(new_lobby_id):
-		if lobby_id == new_lobby_id: return # If the new lobby ID is the same, nothing has changed.
 		lobby_id = new_lobby_id
 		lobby_changed.emit()
 
@@ -223,3 +222,9 @@ func _on_lobby_data_steam_update(success: int, _lobby_id: int, issuer_id: int) -
 		data[val.key] = val.value
 
 	lobby_data.update(data)
+
+# -- Utility Functions -- #
+
+## Returns whether the current user is owner of the current lobby or not.
+func is_owner_me() -> bool:
+	return Steam.getLobbyOwner(lobby_id) == Steam.getSteamID()

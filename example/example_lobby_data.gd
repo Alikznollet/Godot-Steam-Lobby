@@ -8,6 +8,6 @@ var lobby_name: String = "invalid"
 ## The type of game, here just EXAMPLE.
 var game_type: GAME_TYPES
 enum GAME_TYPES {
-	INVALID,
+	INVALID, # ! Always set the first enum value to INVALID. Filters behave weirdly with zero values.
 	EXAMPLE
 }
