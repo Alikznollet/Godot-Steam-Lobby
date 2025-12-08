@@ -44,7 +44,9 @@ func apply_filters() -> void:
 
 				# Get all needed variables.
 				var filter: Variant = get(property.name)
+				assert("t_" + base in self, "SteamLobbyFilter: Did not find FILTER_TYPE field for %s. Define it as t_%s with type FILTER_TYPE." % [base, base])
 				var filter_type: FILTER_TYPE = get("t_" + base)
+				assert("c_" + base in self, "SteamLobbyFilter: Did not find Steam.LobbyComparison field for %s. Define it as c_%s with type Steam.LobbyComparison." % [base, base])
 				var comparison: Steam.LobbyComparison = get("c_" + base)
 				
 				match filter_type:

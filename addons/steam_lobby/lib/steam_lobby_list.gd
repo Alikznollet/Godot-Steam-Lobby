@@ -55,3 +55,5 @@ func request_lobbies() -> void:
 func _receive_lobby_list(p_lobbies: Array) -> void:
 	lobbies = p_lobbies
 	lobbies_updated.emit(lobbies)
+
+# TODO: Add Formatting for lobbies.

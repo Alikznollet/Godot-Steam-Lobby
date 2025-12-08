@@ -46,5 +46,6 @@ func change_property(property: StringName, value: Variant) -> bool:
 		set(property, value)
 		local_update.emit()
 		return true
+	# Gracefully lets the user know that this field does not exist. We don't need to panic here because no state change happens.
 	printerr("SteamLobbyData: Field %s does not exist in %s." % [property, get_script().get_global_name()])
 	return false
