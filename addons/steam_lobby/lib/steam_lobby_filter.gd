@@ -23,9 +23,11 @@ enum FILTER_TYPE {
 
 # -- Default Filter parameters -- #
 
+@export_group("Default Parameters")
+
 ## Distance Filter applied to Steam's lobby search.
 ## Default: Steam.LOBBY_DISTANCE_FILTER_DEFAULT
-var distance: Steam.LobbyDistanceFilter = Steam.LOBBY_DISTANCE_FILTER_DEFAULT
+@export var distance: Steam.LobbyDistanceFilter = Steam.LOBBY_DISTANCE_FILTER_DEFAULT
 
 # -- Filter Application -- #
 
@@ -47,7 +49,8 @@ func apply_filters() -> void:
 
 				match filter_type:
 					FILTER_TYPE.STRING:
-						Steam.addRequestLobbyListStringFilter(base, filter, comparison)
+						# Because of the way we are storing LobbyData we need to filter on the var_to_str. "\"example\"" with escapes.
+						Steam.addRequestLobbyListStringFilter(base, var_to_str(filter), comparison)
 					FILTER_TYPE.NUMERICAL:
 						Steam.addRequestLobbyListNumericalFilter(base, filter, comparison)
 					FILTER_TYPE.NEAR_VALUE:

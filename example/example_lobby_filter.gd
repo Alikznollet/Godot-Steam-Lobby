@@ -7,3 +7,7 @@ class_name ExampleLobbyFilter
 @export var t_lobby_name: FILTER_TYPE = FILTER_TYPE.STRING
 @export var c_lobby_name: Steam.LobbyComparison = Steam.LOBBY_COMPARISON_EQUAL
 
+## GameType filter
+@export var f_game_type: ExampleLobbyData.GAME_TYPES
+@export var t_game_type: FILTER_TYPE = FILTER_TYPE.NUMERICAL
+@export var c_game_type: Steam.LobbyComparison = Steam.LOBBY_COMPARISON_EQUAL

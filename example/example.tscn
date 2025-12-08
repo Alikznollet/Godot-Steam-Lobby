@@ -7,6 +7,8 @@
 [sub_resource type="Resource" id="Resource_7cn0y"]
 script = ExtResource("3_8clr1")
 f_lobby_name = "test"
+t_lobby_name = 0
+f_game_type = 1
 metadata/_custom_type_script = "uid://egqjef3xltb5"
 
 [node name="Example" type="Control"]
@@ -19,6 +21,7 @@ grow_vertical = 2
 script = ExtResource("1_fdt2r")
 
 [node name="SteamLobbyList" type="Node" parent="."]
+unique_name_in_owner = true
 script = ExtResource("2_pjyox")
 lobby_filter = SubResource("Resource_7cn0y")
 refresh_time = 5
@@ -85,8 +88,52 @@ offset_left = -68.5625
 offset_bottom = 31.0
 grow_horizontal = 0
 
+[node name="GameType" type="OptionButton" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1048.0
+offset_top = 41.0
+offset_right = 1146.0
+offset_bottom = 74.0
+item_count = 2
+popup/item_0/text = "Invalid"
+popup/item_0/id = 0
+popup/item_1/text = "Example"
+popup/item_1/id = 1
+
+[node name="Filters" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -178.0
+offset_top = -97.0
+offset_right = -6.0
+offset_bottom = -7.0
+grow_horizontal = 0
+grow_vertical = 0
+alignment = 2
+
+[node name="FilterLobbyName" type="LineEdit" parent="Filters"]
+layout_mode = 2
+placeholder_text = "lobby name filter"
+
+[node name="FilterGameType" type="OptionButton" parent="Filters"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "Invalid"
+popup/item_0/id = 0
+popup/item_1/text = "Example"
+popup/item_1/id = 1
+
 [connection signal="lobbies_updated" from="SteamLobbyList" to="." method="_on_steam_lobby_list_lobbies_updated"]
 [connection signal="pressed" from="LobbyIDLeave/LeaveLobby" to="." method="_on_leave_lobby_pressed"]
 [connection signal="pressed" from="JoinCreate/JoinLobby" to="." method="_on_join_lobby_pressed"]
 [connection signal="pressed" from="JoinCreate/CreateLobby" to="." method="_on_create_lobby_pressed"]
 [connection signal="text_submitted" from="LobbyName" to="." method="_on_lobby_name_text_submitted"]
+[connection signal="item_selected" from="GameType" to="." method="_on_option_button_item_selected"]
+[connection signal="text_submitted" from="Filters/FilterLobbyName" to="." method="_on_filter_lobby_name_text_submitted"]
+[connection signal="item_selected" from="Filters/FilterGameType" to="." method="_on_filter_game_type_item_selected"]

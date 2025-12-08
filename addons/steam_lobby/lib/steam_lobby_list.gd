@@ -18,6 +18,15 @@ var lobbies: Array
 
 # -- Timer -- #
 
+## Whether the lobby fetching should be enabled or not.
+var enabled: bool = false:
+	set(n_enabled):
+		enabled = n_enabled
+		if enabled: 
+			request_lobbies()
+			_fetch_timer.start()
+		else: _fetch_timer.stop()
+
 ## Timer that will trigger a lobby list request on timeout.
 var _fetch_timer: Timer
 
@@ -33,7 +42,6 @@ func _ready() -> void:
 	_fetch_timer.autostart = true
 
 	add_child(_fetch_timer)
-	request_lobbies() # Initially request lobbies.
 
 # -- Retrieval lobbies -- #
 
