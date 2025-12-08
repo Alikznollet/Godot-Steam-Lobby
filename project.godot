@@ -14,7 +14,7 @@ config/name="SteamLobby"
 config/tags=PackedStringArray("plugin")
 run/main_scene="uid://b6646y088dd61"
 config/features=PackedStringArray("4.5", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="uid://c8n4gxceyqmsw"
 
 [autoload]
 
