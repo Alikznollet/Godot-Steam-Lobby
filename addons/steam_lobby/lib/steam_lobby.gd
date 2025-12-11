@@ -92,6 +92,9 @@ func _on_lobby_created(connected: int, this_lobby_id: int) -> void:
 	
 # -- Lobby Joining -- #
 
+## Signal emitted when a lobby is joined. This can be either a creation or a join itself.
+signal lobby_joined()
+
 ## Will try to join the lobby with provided ID.
 func join_lobby(lobby_id: int) -> void:
 	# Clear any previous lobby members lists, if you were in a previous lobby
@@ -106,6 +109,7 @@ func _on_lobby_joined(this_lobby_id: int, _permissions: int, _locked: bool, resp
 	if response == Steam.CHAT_ROOM_ENTER_RESPONSE_SUCCESS:
 		# Set this lobby ID as your lobby ID
 		lobby_id = this_lobby_id
+		lobby_joined.emit()
 
 	# If the response was not success
 	else:
@@ -119,12 +123,16 @@ func _on_lobby_join_requested(this_lobby_id: int, _friend_id: int) -> void:
 
 # -- Lobby Leaving -- #
 
+## Emitted when a lobby is left.
+signal lobby_left()
+
 ## Leave the current lobby if there is one and reset all fields.
 func leave_lobby() -> void:
 	if lobby_id != 0:
 		Steam.leaveLobby(lobby_id)
 		lobby_id = 0
 		lobby_members.clear()
+		lobby_left.emit()
 
 # -- Updates -- #
 
@@ -224,6 +232,10 @@ func _on_lobby_data_steam_update(success: int, _lobby_id: int, issuer_id: int) -
 	lobby_data.update(data)
 
 # -- Utility Functions -- #
+
+## Returns the Steam ID of the current lobby owner.
+func get_lobby_owner() -> int:
+	return Steam.getLobbyOwner(lobby_id)
 
 ## Returns whether the current user is owner of the current lobby or not.
 func is_owner_me() -> bool:
