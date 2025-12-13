@@ -15,6 +15,7 @@ func _ready() -> void:
 
 ## Reacts to the user joined signal from SteamLobby
 func _user_joined(user: SteamUser) -> void:
+	print("joined")
 	var label: Label = Label.new()
 	label.text = "Name: %s\nID: %d" % [user.name, user.steam_id]
 	member_labels[user.steam_id] = label
@@ -22,12 +23,14 @@ func _user_joined(user: SteamUser) -> void:
 
 ## Reacts to the user left signal.
 func _user_left(user: SteamUser) -> void:
+	print("left")
 	var label: Label = member_labels[user.steam_id]
 	label.queue_free()
 	member_labels.erase(user.steam_id)
 
 ## Reacts to the user updated signal.
 func _user_updated(user: SteamUser) -> void:
+	print("updated")
 	var label: Label = member_labels[user.steam_id]
 	label.text = "Name: %s\nID: %d" % [user.name, user.steam_id]
 

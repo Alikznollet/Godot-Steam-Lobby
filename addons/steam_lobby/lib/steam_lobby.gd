@@ -111,6 +111,9 @@ func _on_lobby_joined(this_lobby_id: int, _permissions: int, _locked: bool, resp
 		lobby_id = this_lobby_id
 		lobby_joined.emit()
 
+		# Get all currently connected members.
+		_fetch_lobby_members()
+
 	# If the response was not success
 	else:
 		lobby_id = 0 # This removes the cached lobby file.
@@ -149,9 +152,7 @@ signal user_updated(user: SteamUser)
 ## Flag is ignored here because we don't need to know what was updated.
 func _on_persona_change(steam_id: int, _flag: int) -> void:
 	if lobby_id > 0:
-		# Little hack to check whether the persona change is of someone in the lobby.
-		var present: String = Steam.getLobbyMemberData(lobby_id, steam_id, "foo")
-		if present == "": _update_steam_user(steam_id)
+		if user_in_lobby(steam_id): _update_steam_user(steam_id)
 
 ## Updates SteamUser instance linked to steam_id.
 func _update_steam_user(steam_id: int) -> void:
@@ -194,7 +195,7 @@ func _on_lobby_chat_update(this_lobby_id: int, changer_id: int, making_change_id
 			_update_steam_user(changer_id)
 
 ## Will fill the lobby_members dictionary with all currently connected users.
-func _get_steam_users() -> void:
+func _fetch_lobby_members() -> void:
 	for i in range(Steam.getNumLobbyMembers(lobby_id)):
 		var id: int = Steam.getLobbyMemberByIndex(lobby_id, i)
 		_update_steam_user(id)
@@ -260,3 +261,14 @@ func get_lobby_owner() -> int:
 ## Returns whether the current user is owner of the current lobby or not.
 func is_owner_me() -> bool:
 	return Steam.getLobbyOwner(lobby_id) == Steam.getSteamID()
+
+## Check whether a certain user is in the lobby or not.
+## This is checked against the Steam side to be sure.
+func user_in_lobby(steam_id: int) -> bool:
+	var present: bool = false
+	for i in range(Steam.getNumLobbyMembers(lobby_id)):
+		var s_id: int = Steam.getLobbyMemberByIndex(lobby_id, i)
+		if s_id == steam_id: present = true
+
+	return present
+
