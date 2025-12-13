@@ -202,6 +202,9 @@ func _fetch_lobby_members() -> void:
 
 # -- LobbyData -- #
 
+## Emitted when the SteamLobbyData is updated.
+signal lobby_data_updated(lobby_data: SteamLobbyData)
+
 ## Holds LobbyData that was passed to the create_lobby function.
 ## When confirmation is returned then the lobby_data field is populated with this value.
 var _tmp_lobby_data: SteamLobbyData
@@ -232,6 +235,7 @@ func _on_lobby_data_local_update() -> void:
 
 ## Reacts to an external update from the lobby_data field.
 func _on_lobby_data_external_update() -> void:
+	lobby_data_updated.emit(lobby_data)
 	lobby_changed.emit()
 
 ## Triggered when the Steam's LobbyData is changed.

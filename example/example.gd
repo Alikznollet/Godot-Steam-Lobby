@@ -5,17 +5,19 @@ extends Control
 var member_labels: Dictionary[int, Label] = {}
 
 func _ready() -> void:
-	SteamLobby.lobby_changed.connect(_new_lobby)
 	SteamLobby.user_joined.connect(_user_joined)
 	SteamLobby.user_left.connect(_user_left)
 	SteamLobby.user_updated.connect(_user_updated)
-	_new_lobby()
+	SteamLobby.lobby_data_updated.connect(_lobby_data_updated)
+	SteamLobby.lobby_joined.connect(_lobby_joined)
+	SteamLobby.lobby_left.connect(_lobby_left)
+
+	_lobby_left()
 
 # -- Visual changes -- #
 
 ## Reacts to the user joined signal from SteamLobby
 func _user_joined(user: SteamUser) -> void:
-	print("joined")
 	var label: Label = Label.new()
 	label.text = "Name: %s\nID: %d" % [user.name, user.steam_id]
 	member_labels[user.steam_id] = label
@@ -23,14 +25,12 @@ func _user_joined(user: SteamUser) -> void:
 
 ## Reacts to the user left signal.
 func _user_left(user: SteamUser) -> void:
-	print("left")
 	var label: Label = member_labels[user.steam_id]
 	label.queue_free()
 	member_labels.erase(user.steam_id)
 
 ## Reacts to the user updated signal.
 func _user_updated(user: SteamUser) -> void:
-	print("updated")
 	var label: Label = member_labels[user.steam_id]
 	label.text = "Name: %s\nID: %d" % [user.name, user.steam_id]
 
@@ -40,34 +40,33 @@ func _clear_labels():
 		label.queue_free()
 	member_labels.clear()
 
-# Reacts to the lobby_changed signal appropriately.
-func _new_lobby() -> void:
-	if SteamLobby.lobby_id == 0:
-		%JoinCreate.show()
-		%Filters.show()
-		%SteamLobbyList.enabled = true
-		%LeaveLobby.hide()
-		%LobbyDetails.hide()
-		%LobbyID.editable = true
-		%LobbyID.text = "0"
+## Reacts to the lobby_data_updated signal from SteamLobby.
+func _lobby_data_updated(lobby_data: ExampleLobbyData) -> void:
+	%LobbyName.text = str(lobby_data.lobby_name)
+	%GameType.selected = lobby_data.game_type
 
-		# Remove all labels
-		_clear_labels()
-	else:
-		# This is triggered when a new actual lobby is joined.
-		%JoinCreate.hide()
-		%Filters.hide()
-		%SteamLobbyList.enabled = false
-		%LeaveLobby.show()
-		%LobbyDetails.show()
-		%LobbyID.editable = false
-		%LobbyID.text = str(SteamLobby.lobby_id)
-		if SteamLobby.lobby_data is ExampleLobbyData:
-			%LobbyName.text = str(SteamLobby.lobby_data.lobby_name)
-			%GameType.selected = SteamLobby.lobby_data.game_type
+func _lobby_joined() -> void:
+	%JoinCreate.hide()
+	%Filters.hide()
+	%SteamLobbyList.enabled = false
+	%LeaveLobby.show()
+	%LobbyDetails.show()
+	%LobbyID.editable = false
+	%LobbyID.text = str(SteamLobby.lobby_id)
+	%LobbyName.editable = SteamLobby.is_owner_me()
+	%GameType.disabled = !SteamLobby.is_owner_me()
 
-		%LobbyName.editable = SteamLobby.is_owner_me()
-		%GameType.disabled = !SteamLobby.is_owner_me()
+func _lobby_left() -> void:
+	%JoinCreate.show()
+	%Filters.show()
+	%SteamLobbyList.enabled = true
+	%LeaveLobby.hide()
+	%LobbyDetails.hide()
+	%LobbyID.editable = true
+	%LobbyID.text = "0"
+
+	# Remove all labels
+	_clear_labels()
 
 # -- Joining, leaving and creating -- #
 
