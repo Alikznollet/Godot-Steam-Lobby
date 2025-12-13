@@ -222,12 +222,17 @@ var lobby_data: SteamLobbyData:
 
 		lobby_data = new_lobby_data
 
-## Reacts to a local update from the lobby_data field.
-func _on_lobby_data_local_update() -> void:
-	# Check wether the user trying to perform a local change is the owner.
-	# ? Is this necessary to be in the source, can be user checked too maybe?
-	if Steam.getLobbyOwner(lobby_id) != Steam.getSteamID(): print("SteamLobby: You are not the lobby owner!")
+## Changes the property with key to value in the current LobbyData instance.
+## Will return false if the property does not exist or LobbyData itself does not exist.
+func change_lobby_data_property(key: String, value: Variant) -> bool:
+	if not lobby_data: printerr("SteamLobby: No current LobbyData to alter."); return false
 
+	var valid: bool = lobby_data.change_property(key, value)
+	return valid
+
+## Reacts to a local update from the lobby_data field.
+## No need to check for lobby ownership since steam does not let others edit LobbyData.
+func _on_lobby_data_local_update() -> void:
 	var data: Dictionary = lobby_data.get_data()
 	for key in data:
 		var value: String = data[key]
@@ -275,4 +280,3 @@ func user_in_lobby(steam_id: int) -> bool:
 		if s_id == steam_id: present = true
 
 	return present
-

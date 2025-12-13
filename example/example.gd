@@ -86,12 +86,10 @@ func _on_leave_lobby_pressed() -> void:
 # -- Changing LobbyData -- #
 
 func _on_lobby_name_text_submitted(new_text: String) -> void:
-	if SteamLobby.lobby_data is ExampleLobbyData:
-		SteamLobby.lobby_data.change_property("lobby_name", new_text)
+	SteamLobby.change_lobby_data_property("lobby_name", new_text)
 
 func _on_option_button_item_selected(index: int) -> void:
-	if SteamLobby.lobby_data is ExampleLobbyData:
-		SteamLobby.lobby_data.change_property("game_type", index)
+	SteamLobby.change_lobby_data_property("game_type", index)
 
 # -- Filtering and lobbies -- #
 
