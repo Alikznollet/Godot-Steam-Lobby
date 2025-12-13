@@ -6,9 +6,36 @@ var member_labels: Dictionary[int, Label] = {}
 
 func _ready() -> void:
 	SteamLobby.lobby_changed.connect(_new_lobby)
+	SteamLobby.user_joined.connect(_user_joined)
+	SteamLobby.user_left.connect(_user_left)
+	SteamLobby.user_updated.connect(_user_updated)
 	_new_lobby()
 
 # -- Visual changes -- #
+
+## Reacts to the user joined signal from SteamLobby
+func _user_joined(user: SteamUser) -> void:
+	var label: Label = Label.new()
+	label.text = "Name: %s\nID: %d" % [user.name, user.steam_id]
+	member_labels[user.steam_id] = label
+	%MembersList.add_child(label)
+
+## Reacts to the user left signal.
+func _user_left(user: SteamUser) -> void:
+	var label: Label = member_labels[user.steam_id]
+	label.queue_free()
+	member_labels.erase(user.steam_id)
+
+## Reacts to the user updated signal.
+func _user_updated(user: SteamUser) -> void:
+	var label: Label = member_labels[user.steam_id]
+	label.text = "Name: %s\nID: %d" % [user.name, user.steam_id]
+
+## Clears all labels.
+func _clear_labels():
+	for label: Label in member_labels.values():
+		label.queue_free()
+	member_labels.clear()
 
 # Reacts to the lobby_changed signal appropriately.
 func _new_lobby() -> void:
@@ -38,21 +65,6 @@ func _new_lobby() -> void:
 
 		%LobbyName.editable = SteamLobby.is_owner_me()
 		%GameType.disabled = !SteamLobby.is_owner_me()
-		
-		# Generate or update the label for each member
-		_clear_labels()
-		for member: SteamUser in SteamLobby.lobby_members.values():
-			if not member_labels.has(member.steam_id):
-				member_labels[member.steam_id] = Label.new()
-				%MembersList.add_child(member_labels[member.steam_id])
-
-			member_labels[member.steam_id].text = "Name: %s\nID: %d" % [member.name, member.steam_id]
-
-## ! Ew this feels wrong
-func _clear_labels():
-	for label: Label in member_labels.values():
-		label.queue_free()
-	member_labels.clear()
 
 # -- Joining, leaving and creating -- #
 

@@ -136,16 +136,28 @@ func leave_lobby() -> void:
 
 # -- Updates -- #
 
+## Emitted when a user joins the lobby.
+signal user_joined(user: SteamUser)
+
+## Emitted when a user leaves the lobby.
+signal user_left(user: SteamUser)
+
+## Emitted when a user's metadata is updated.
+signal user_updated(user: SteamUser)
+
 ## If some player changes it's persona we update that player.
 ## Flag is ignored here because we don't need to know what was updated.
 func _on_persona_change(steam_id: int, _flag: int) -> void:
 	if lobby_id > 0:
-		_get_steam_users() # TODO: Find a way to make this on a user basis and also when joining or leaving.
+		# Little hack to check whether the persona change is of someone in the lobby.
+		var present: String = Steam.getLobbyMemberData(lobby_id, steam_id, "foo")
+		if present == "": _update_steam_user(steam_id)
 
 ## Updates SteamUser instance linked to steam_id.
 func _update_steam_user(steam_id: int) -> void:
+	var present: bool = lobby_members.has(steam_id)
 	var user: SteamUser
-	if lobby_members.has(steam_id):
+	if present:
 		user = lobby_members[steam_id]
 	else:
 		user = SteamUser.new(steam_id)
@@ -154,6 +166,11 @@ func _update_steam_user(steam_id: int) -> void:
 	# TODO: Add more metadata here.
 	user.name = Steam.getFriendPersonaName(steam_id)
 
+	# Emit the correct signal
+	if present:
+		user_updated.emit(user)
+	else:
+		user_joined.emit(user)
 	lobby_changed.emit()
 
 ## Will remove the user with steam_id from the members list.
@@ -161,8 +178,11 @@ func _update_steam_user(steam_id: int) -> void:
 func _remove_steam_user(steam_id: int) -> void:
 	if not lobby_members.has(steam_id): return # Doesn't have id so exit gracefully
 
+	var user: SteamUser = lobby_members[steam_id]
 	lobby_members.erase(steam_id)
+
 	lobby_changed.emit()
+	user_left.emit(user)
 
 ## Updates the lobby according to the chat_state.
 func _on_lobby_chat_update(this_lobby_id: int, changer_id: int, making_change_id, chat_state: int) -> void:
