@@ -19,7 +19,7 @@ config/icon="uid://c8n4gxceyqmsw"
 [autoload]
 
 SteamLobby="*res://addons/steam_lobby/lib/steam_lobby.gd"
-SteamLobbyDataDB="*res://addons/steam_lobby/lib/steam_lobby_data_db.gd"
+SteamLobbyDataDB="*res://addons/steam_lobby/lib/steam_lobby_data_registry.gd"
 
 [editor_plugins]
 

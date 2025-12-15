@@ -9,9 +9,6 @@ extends Node
 ## Path to the lobby cache file. Used to rejoin lobbies that were incorrectly left.
 const _lobby_cache_path: String = "user://lobby_cache.txt"
 
-## Signal emitted when the lobby is changed in any shape or form.
-signal lobby_changed()
-
 # -- Variables -- #
 
 ## Maximum users that can be connected to the lobby at once.
@@ -22,7 +19,6 @@ var max_members: int = 10
 var lobby_id: int = 0:
 	set(new_lobby_id):
 		lobby_id = new_lobby_id
-		lobby_changed.emit()
 
 		# If lobby is left intentionally we will delete the file and reset LobbyData.
 		if lobby_id == 0:
@@ -87,7 +83,7 @@ func _on_lobby_created(connected: int, this_lobby_id: int) -> void:
 
 		# Set lobby data and tell the lobby what type of LobbyData is used.
 		lobby_data = _tmp_lobby_data
-		Steam.setLobbyData(lobby_id, "ld_type", lobby_data.get_script().get_global_name())
+		Steam.setLobbyData(lobby_id, "ld_type", var_to_str(SteamLobbyDataRegistry.get_id(lobby_data.get_script())))
 		_on_lobby_data_local_update() # Make sure to trigger a local update after init.
 	
 # -- Lobby Joining -- #
@@ -172,7 +168,6 @@ func _update_steam_user(steam_id: int) -> void:
 		user_updated.emit(user)
 	else:
 		user_joined.emit(user)
-	lobby_changed.emit()
 
 ## Will remove the user with steam_id from the members list.
 ## This normally means they have left the lobby.
@@ -182,7 +177,6 @@ func _remove_steam_user(steam_id: int) -> void:
 	var user: SteamUser = lobby_members[steam_id]
 	lobby_members.erase(steam_id)
 
-	lobby_changed.emit()
 	user_left.emit(user)
 
 ## Updates the lobby according to the chat_state.
@@ -241,14 +235,14 @@ func _on_lobby_data_local_update() -> void:
 ## Reacts to an external update from the lobby_data field.
 func _on_lobby_data_external_update() -> void:
 	lobby_data_updated.emit(lobby_data)
-	lobby_changed.emit()
 
 ## Triggered when the Steam's LobbyData is changed.
 ## Updates the current SteamLobbyData object in lobby_data.
 func _on_lobby_data_steam_update(success: int, _lobby_id: int, issuer_id: int) -> void:
 	# If there's no lobby data yet we'll instantiate a new one from the ld_type field.
 	if not lobby_data:
-		lobby_data = SteamLobbyDataDB.init_from_stringname(Steam.getLobbyData(lobby_id, "ld_type"))
+		var ld_type: int = str_to_var(Steam.getLobbyData(lobby_id, "ld_type"))
+		lobby_data = SteamLobbyDataRegistry.get_script_from_id(ld_type).new()
 		
 	# We need to slightly reformat.
 	var raw_data: Dictionary = Steam.getAllLobbyData(lobby_id)
