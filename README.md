@@ -20,38 +20,36 @@ The plugin requires **two** things to work:
 The main node of the plugin is `SteamLobby`. This is an autoload node that is automatically added to your global scripts when the plugin is enabled. 
 
 Functions, Signals and Properties:
-- `lobby_changed`: a signal that is emitted whenever the lobby has undergone a change.
 - `max_members`: the maximum members that the lobby can hold.
 - `lobby_id`: the id of the current lobby, 0 if none.
 - `lobby_members`: dictionary mapping steamid64 to `SteamUser` resources.
 - `create_lobby(type, lobby_data)`: attempts to create a lobby with given type and `SteamLobbyData`.
 - `join_lobby(lobby_id)`: attempts to join the lobby with id lobby_id.
+- `lobby_joined`: a signal that is emitted whenever you join a lobby. That could be the lobby you just created or a random lobby.
 - `leave_lobby()`: leaves the current lobby if in one.
+- `lobby_left`: a signal that is emitted when you just left a lobby.
+- `user_joined`: a signal that is emitted when a user joins the current lobby.
+- `user_left`: a signal that is emitted when a user leaves the current lobby.
+- `user_updated`: a signal that is emitted when a user in the current lobby is updated.
 - `lobby_data`: field holding a SteamLobbyData resource, the exact type is the one provided to `create_lobby()` or received from the owner of the lobby.
+- `lobby_data_updated`: a signal emitted whenever the `lobby_data` field is changed.
+- `change_lobby_data_property(key, value)`: changes the property with name *key* to *value*. If there is no lobby data present then this silently fails.
+- `get_lobby_owner()`: returns the steam ID64 of the owner of the current lobby.
 - `is_owner_me()`: tells whether you are the owner of the lobby or not.
+- `user_in_lobby(user_steam_id)`: tells whether the user with specified id is in the current lobby.
 
 Some extra functionality includes caching of the `lobby_id` if the lobby is not left cleanly, and then using that cache to rejoin that lobby on boot. When anything changes inside the `lobby_data` resource the script will automatically update lobby data on Steam.
 
 ### `SteamLobbyData`
 
-An abstract resource holding imporant data regarding a lobby. The resource does not need to be abstract, but it is useless on it's own so this enforces implementation. 
+An abstract resource holding important data regarding a lobby. The resource does not need to be abstract, but it is useless on it's own so this enforces implementation. 
 
-Functions, Signals and Properties:
-- `change_property(property, value)`: function used to set the value of `property` to `value`. This replaces direct assignment for lobby data resources, since direct assignment can't automatically send out a signal to notify the outside of it's change.
-
-All you need to do to define your own `SteamLobbyData` is implement it and give it a unique name, then add the fields you need.
+All you need to do to define your own `SteamLobbyData` is implement it and give it a unique name, then add the fields you need. The rest is handled by the `SteamLobby` node.
 
 > [!IMPORTANT]
 > The current implementation only allows types that are supported by `var_to_str()` and `str_to_var()`. This means any non resource or node.
 
 An example of such an implementation can be found in `example/example_lobby_data.gd`.
-
-### `SteamLobbyDataDB`
-
-Another autoload, it holds all custom `SteamLobbyData` implementations.
-
-Functions, Signals and Properties:
-- `init_from_stringname(stringname)`: returns the script-instance for the provided stringname if it is a `SteamLobbyData` implementation. This is mainly used in the plugin, but can be used outside of it too where needed.
 
 ### `SteamUser`
 

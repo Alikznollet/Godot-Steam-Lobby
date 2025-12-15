@@ -9,9 +9,6 @@ extends Node
 ## Path to the lobby cache file. Used to rejoin lobbies that were incorrectly left.
 const _lobby_cache_path: String = "user://lobby_cache.txt"
 
-## Signal emitted when the lobby is changed in any shape or form.
-signal lobby_changed()
-
 # -- Variables -- #
 
 ## Maximum users that can be connected to the lobby at once.
@@ -22,7 +19,6 @@ var max_members: int = 10
 var lobby_id: int = 0:
 	set(new_lobby_id):
 		lobby_id = new_lobby_id
-		lobby_changed.emit()
 
 		# If lobby is left intentionally we will delete the file and reset LobbyData.
 		if lobby_id == 0:
@@ -87,10 +83,13 @@ func _on_lobby_created(connected: int, this_lobby_id: int) -> void:
 
 		# Set lobby data and tell the lobby what type of LobbyData is used.
 		lobby_data = _tmp_lobby_data
-		Steam.setLobbyData(lobby_id, "ld_type", lobby_data.get_script().get_global_name())
+		Steam.setLobbyData(lobby_id, "ld_type", var_to_str(SteamLobbyDataRegistry.get_id(lobby_data.get_script())))
 		_on_lobby_data_local_update() # Make sure to trigger a local update after init.
 	
 # -- Lobby Joining -- #
+
+## Signal emitted when a lobby is joined. This can be either a creation or a join itself.
+signal lobby_joined()
 
 ## Will try to join the lobby with provided ID.
 func join_lobby(lobby_id: int) -> void:
@@ -106,6 +105,10 @@ func _on_lobby_joined(this_lobby_id: int, _permissions: int, _locked: bool, resp
 	if response == Steam.CHAT_ROOM_ENTER_RESPONSE_SUCCESS:
 		# Set this lobby ID as your lobby ID
 		lobby_id = this_lobby_id
+		lobby_joined.emit()
+
+		# Get all currently connected members.
+		_fetch_lobby_members()
 
 	# If the response was not success
 	else:
@@ -119,25 +122,39 @@ func _on_lobby_join_requested(this_lobby_id: int, _friend_id: int) -> void:
 
 # -- Lobby Leaving -- #
 
+## Emitted when a lobby is left.
+signal lobby_left()
+
 ## Leave the current lobby if there is one and reset all fields.
 func leave_lobby() -> void:
 	if lobby_id != 0:
 		Steam.leaveLobby(lobby_id)
 		lobby_id = 0
 		lobby_members.clear()
+		lobby_left.emit()
 
 # -- Updates -- #
+
+## Emitted when a user joins the lobby.
+signal user_joined(user: SteamUser)
+
+## Emitted when a user leaves the lobby.
+signal user_left(user: SteamUser)
+
+## Emitted when a user's metadata is updated.
+signal user_updated(user: SteamUser)
 
 ## If some player changes it's persona we update that player.
 ## Flag is ignored here because we don't need to know what was updated.
 func _on_persona_change(steam_id: int, _flag: int) -> void:
 	if lobby_id > 0:
-		_get_steam_users() # TODO: Find a way to make this on a user basis and also when joining or leaving.
+		if user_in_lobby(steam_id): _update_steam_user(steam_id)
 
 ## Updates SteamUser instance linked to steam_id.
 func _update_steam_user(steam_id: int) -> void:
+	var present: bool = lobby_members.has(steam_id)
 	var user: SteamUser
-	if lobby_members.has(steam_id):
+	if present:
 		user = lobby_members[steam_id]
 	else:
 		user = SteamUser.new(steam_id)
@@ -146,15 +163,21 @@ func _update_steam_user(steam_id: int) -> void:
 	# TODO: Add more metadata here.
 	user.name = Steam.getFriendPersonaName(steam_id)
 
-	lobby_changed.emit()
+	# Emit the correct signal
+	if present:
+		user_updated.emit(user)
+	else:
+		user_joined.emit(user)
 
 ## Will remove the user with steam_id from the members list.
 ## This normally means they have left the lobby.
 func _remove_steam_user(steam_id: int) -> void:
 	if not lobby_members.has(steam_id): return # Doesn't have id so exit gracefully
 
+	var user: SteamUser = lobby_members[steam_id]
 	lobby_members.erase(steam_id)
-	lobby_changed.emit()
+
+	user_left.emit(user)
 
 ## Updates the lobby according to the chat_state.
 func _on_lobby_chat_update(this_lobby_id: int, changer_id: int, making_change_id, chat_state: int) -> void:
@@ -166,12 +189,15 @@ func _on_lobby_chat_update(this_lobby_id: int, changer_id: int, making_change_id
 			_update_steam_user(changer_id)
 
 ## Will fill the lobby_members dictionary with all currently connected users.
-func _get_steam_users() -> void:
+func _fetch_lobby_members() -> void:
 	for i in range(Steam.getNumLobbyMembers(lobby_id)):
 		var id: int = Steam.getLobbyMemberByIndex(lobby_id, i)
 		_update_steam_user(id)
 
 # -- LobbyData -- #
+
+## Emitted when the SteamLobbyData is updated.
+signal lobby_data_updated(lobby_data: SteamLobbyData)
 
 ## Holds LobbyData that was passed to the create_lobby function.
 ## When confirmation is returned then the lobby_data field is populated with this value.
@@ -190,12 +216,17 @@ var lobby_data: SteamLobbyData:
 
 		lobby_data = new_lobby_data
 
-## Reacts to a local update from the lobby_data field.
-func _on_lobby_data_local_update() -> void:
-	# Check wether the user trying to perform a local change is the owner.
-	# ? Is this necessary to be in the source, can be user checked too maybe?
-	if Steam.getLobbyOwner(lobby_id) != Steam.getSteamID(): print("SteamLobby: You are not the lobby owner!")
+## Changes the property with key to value in the current LobbyData instance.
+## Will return false if the property does not exist or LobbyData itself does not exist.
+func change_lobby_data_property(key: String, value: Variant) -> bool:
+	if not lobby_data: printerr("SteamLobby: No current LobbyData to alter."); return false
 
+	var valid: bool = lobby_data.change_property(key, value)
+	return valid
+
+## Reacts to a local update from the lobby_data field.
+## No need to check for lobby ownership since steam does not let others edit LobbyData.
+func _on_lobby_data_local_update() -> void:
 	var data: Dictionary = lobby_data.get_data()
 	for key in data:
 		var value: String = data[key]
@@ -203,14 +234,15 @@ func _on_lobby_data_local_update() -> void:
 
 ## Reacts to an external update from the lobby_data field.
 func _on_lobby_data_external_update() -> void:
-	lobby_changed.emit()
+	lobby_data_updated.emit(lobby_data)
 
 ## Triggered when the Steam's LobbyData is changed.
 ## Updates the current SteamLobbyData object in lobby_data.
 func _on_lobby_data_steam_update(success: int, _lobby_id: int, issuer_id: int) -> void:
 	# If there's no lobby data yet we'll instantiate a new one from the ld_type field.
 	if not lobby_data:
-		lobby_data = SteamLobbyDataDB.init_from_stringname(Steam.getLobbyData(lobby_id, "ld_type"))
+		var ld_type: int = str_to_var(Steam.getLobbyData(lobby_id, "ld_type"))
+		lobby_data = SteamLobbyDataRegistry.get_script_from_id(ld_type).new()
 		
 	# We need to slightly reformat.
 	var raw_data: Dictionary = Steam.getAllLobbyData(lobby_id)
@@ -225,6 +257,20 @@ func _on_lobby_data_steam_update(success: int, _lobby_id: int, issuer_id: int) -
 
 # -- Utility Functions -- #
 
+## Returns the Steam ID of the current lobby owner.
+func get_lobby_owner() -> int:
+	return Steam.getLobbyOwner(lobby_id)
+
 ## Returns whether the current user is owner of the current lobby or not.
 func is_owner_me() -> bool:
 	return Steam.getLobbyOwner(lobby_id) == Steam.getSteamID()
+
+## Check whether a certain user is in the lobby or not.
+## This is checked against the Steam side to be sure.
+func user_in_lobby(steam_id: int) -> bool:
+	var present: bool = false
+	for i in range(Steam.getNumLobbyMembers(lobby_id)):
+		var s_id: int = Steam.getLobbyMemberByIndex(lobby_id, i)
+		if s_id == steam_id: present = true
+
+	return present
